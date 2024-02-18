@@ -1,0 +1,13 @@
+services:
+  postgres:
+    container_name: ik_postgresql
+    image: postgres:latest
+    restart: unless-stopped
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data
+    ports:
+      - '5440:5432'
+    environment:
+      - POSTGRES_USER=ik
+      - POSTGRES_PASSWORD=0527
+      - POSTGRES_DB=ik
