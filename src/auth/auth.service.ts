@@ -87,9 +87,15 @@ export class AuthService {
    * 토큰 검증
    */
   verifyToken(token: string) {
-    return this.jwtService.verify(token, {
-      secret: JWT_SECRET,
-    });
+    try {
+      return this.jwtService.verify(token, {
+        secret: JWT_SECRET,
+      });
+    } catch (error) {
+      throw new UnauthorizedException(
+        '만료되었거나 또는 잘못 된 Token 입니다.',
+      );
+    }
   }
 
   /**
