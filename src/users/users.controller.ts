@@ -20,7 +20,7 @@ export class UsersController {
    *
    * deserialization -> 역직렬화
    */
-  @UseInterceptors(ClassSerializerInterceptor)
+  // @UseInterceptors(ClassSerializerInterceptor)
   getUsers() {
     return this.usersService.getAllUser();
   }

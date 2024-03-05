@@ -48,7 +48,7 @@ export class UsersModel extends BaseModel {
    * plain object (JSON) -> class instance (dto)
    *
    * Response
-   * backend -> frontedn
+   * backend -> frontend
    * class instance (dto) -> plain object (JSON)
    *
    * toClassOnly -> class instance (dto) 변환 될 때만: 요청(Request) 보낼때만 적용!
