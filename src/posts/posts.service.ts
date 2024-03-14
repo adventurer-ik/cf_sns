@@ -19,6 +19,16 @@ export class PostsService {
     });
   }
 
+  // TEST - 나중에 꼭 삭제 필수
+  async generatePosts(userId: number) {
+    for (let i = 0; i < 100; i++) {
+      await this.createPost(userId, {
+        title: `임의로 생성한 Test 타이틀 - ${i}`,
+        content: `임의로 생성한 Test 내용 - ${i} - ${i}`,
+      });
+    }
+  }
+
   // 1) 오름차순으로 정렬하는 pagination 먼저 구현 한다.
   async paginatePosts(dto: paginatePostDto) {
     const posts = await this.postsRepository.find({
