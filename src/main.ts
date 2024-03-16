@@ -10,6 +10,9 @@ async function bootstrap() {
     new ValidationPipe({
       // 만약, 값이 없을 경우 실제 DTO에 명시된 디폴트 값을 넣은채로 인스턴스 생성하도록 허가.
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
