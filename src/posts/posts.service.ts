@@ -43,9 +43,12 @@ export class PostsService {
     });
 
     /**
-     * 해당되는 posts가 0개 이상이면 마지막 posts를 가져오고, 아니면 null 반환.
+     * 해당되는 posts가 0개 이상이고, take 값과 같다면 마지막 posts를 가져오고, 아니면 null 반환.
      */
-    const lastItem = posts.length > 0 ? posts[posts.length - 1] : null;
+    const lastItem =
+      posts.length > 0 && posts.length === dto.take
+        ? posts[posts.length - 1]
+        : null;
 
     const nextUrl =
       lastItem && new URL(`${PROTOCOL}://${HOST_IP}:${HOST_PORT}/posts`);
