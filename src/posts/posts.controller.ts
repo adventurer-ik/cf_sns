@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -10,7 +9,6 @@ import {
   Post,
   Query,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
@@ -27,6 +25,8 @@ export class PostsController {
   @Get()
   // @UseInterceptors(ClassSerializerInterceptor)
   getPosts(@Query() query: paginatePostDto) {
+    console.log('====== page.controller.ts ======');
+    console.log(query);
     return this.postsService.paginatePosts(query);
   }
 
