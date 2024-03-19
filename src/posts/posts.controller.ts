@@ -25,9 +25,7 @@ export class PostsController {
   @Get()
   // @UseInterceptors(ClassSerializerInterceptor)
   getPosts(@Query() query: paginatePostDto) {
-    console.log('====== page.controller.ts ======');
-    console.log(query);
-    return this.postsService.paginatePosts(query);
+    return this.postsService.selectPaginatePosts(query);
   }
 
   @Get(':id')

@@ -1,6 +1,10 @@
 import { IsIn, IsNumber, IsOptional } from 'class-validator';
 
 export class paginatePostDto {
+  @IsNumber()
+  @IsOptional()
+  page?: number;
+
   // 오름차순 (Ascending)
   // 이전 데이터의 마지막 id
   // 아래 property에 입력된 id값 보다 +1 더 큰 id부터  가져오기
