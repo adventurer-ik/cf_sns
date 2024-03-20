@@ -10,12 +10,12 @@ export class basePaginationDto {
   // 아래 property에 입력된 id값 보다 +1 더 큰 id부터  가져오기
   @IsNumber()
   @IsOptional()
-  where__id_more_than?: number;
+  where__id__more_than?: number;
 
   // 내림차순 (Descending)
   @IsNumber()
   @IsOptional()
-  where__id_less_than?: number;
+  where__id__less_than?: number;
 
   // 정렬 (sort)
   // createdAt (생성 시간) 기준으로 오름차순 / 내림차순으로 정렬

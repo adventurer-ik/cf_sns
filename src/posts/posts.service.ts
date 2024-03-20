@@ -60,15 +60,15 @@ export class PostsService {
 
   async cursorPaginatePosts(dto: paginatePostDto) {
     let where: FindOptionsWhere<PostsModel> = {};
-    if (dto.where__id_more_than) {
+    if (dto.where__id__more_than) {
       /**
        * where: {
-       *   id: MoreThan(dto.where__id_more_than)
+       *   id: MoreThan(dto.where__id__more_than)
        * }
        */
-      where.id = MoreThan(dto.where__id_more_than);
-    } else if (dto.where__id_less_than) {
-      where.id = LessThan(dto.where__id_less_than);
+      where.id = MoreThan(dto.where__id__more_than);
+    } else if (dto.where__id__less_than) {
+      where.id = LessThan(dto.where__id__less_than);
     }
 
     const posts = await this.postsRepository.find({
@@ -93,12 +93,15 @@ export class PostsService {
     if (nextUrl) {
       /**
        * dto 키 값들을 루핑하면서 key 값에 해당하는 value가 존재하면 param에 그대로 붙여 넣는다.
-       * 단, where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+       * 단, where__id__more_than 값만 lastItem의 마지막 값으로 넣어준다.
        */
 
       for (const key of Object.keys(dto)) {
         if (dto[key]) {
-          if (key !== 'where__id_more_than' && key !== 'where__id_less_than') {
+          if (
+            key !== 'where__id__more_than' &&
+            key !== 'where__id__less_than'
+          ) {
             nextUrl.searchParams.append(key, dto[key]);
           }
         }
@@ -106,9 +109,9 @@ export class PostsService {
 
       let key = null;
       if (dto.oredr__createdAt === 'ASC') {
-        key = 'where__id_more_than';
+        key = 'where__id__more_than';
       } else {
-        key = 'where__id_less_than';
+        key = 'where__id__less_than';
       }
 
       nextUrl.searchParams.append(key, lastItem.id.toString());
