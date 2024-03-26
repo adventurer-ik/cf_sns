@@ -40,7 +40,7 @@ export class CommonService {
   private parseWhereFilter<T extends BaseModel>(
     key: string,
     value: any,
-  ): FindOptionsWhere<T> {
+  ): FindOptionsWhere<T> | FindOptionsOrder<T> {
     const options: FindOptionsWhere<T> = {};
 
     /**
@@ -112,11 +112,6 @@ export class CommonService {
     return options;
   }
 
-  private parseOrderFilter<T extends BaseModel>(
-    key: string,
-    value: any,
-  ): FindOptionsOrder<T> {}
-
   private composeFindOptions<T extends BaseModel>(
     dto: basePaginationDto,
   ): FindManyOptions<T> {
@@ -161,7 +156,7 @@ export class CommonService {
       } else if (key.startsWith('order__')) {
         order = {
           ...order,
-          ...this.parseOrderFilter(key, value),
+          ...this.parseWhereFilter(key, value),
         };
       }
     }
