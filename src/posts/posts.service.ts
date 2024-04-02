@@ -6,12 +6,14 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { paginatePostDto } from './dto/paginate-post.dto';
 import { HOST_IP, HOST_PORT, PROTOCOL } from 'src/common/const/env.const';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
     private readonly postsRepository: Repository<PostsModel>,
+    private readonly commonService: CommonService,
   ) {}
 
   async getAllPosts() {
@@ -32,11 +34,12 @@ export class PostsService {
 
   // 1) 오름차순으로 정렬하는 pagination 먼저 구현 한다.
   async selectPaginatePosts(dto: paginatePostDto) {
-    if (dto.page) {
-      return this.pagePaginatePosts(dto);
-    } else {
-      return this.cursorPaginatePosts(dto);
-    }
+    return this.commonService.paginate(dto, this.postsRepository, {}, 'posts');
+    // if (dto.page) {
+    //   return this.pagePaginatePosts(dto);
+    // } else {
+    //   return this.cursorPaginatePosts(dto);
+    // }
   }
 
   async pagePaginatePosts(dto: paginatePostDto) {
@@ -48,7 +51,7 @@ export class PostsService {
       skip: dto.take * (dto.page - 1),
       take: dto.take,
       order: {
-        createdAt: dto.oredr__createdAt,
+        createdAt: dto.order__createdAt,
       },
     });
 
@@ -74,7 +77,7 @@ export class PostsService {
     const posts = await this.postsRepository.find({
       where,
       order: {
-        createdAt: dto.oredr__createdAt,
+        createdAt: dto.order__createdAt,
       },
       take: dto.take,
     });
@@ -108,7 +111,7 @@ export class PostsService {
       }
 
       let key = null;
-      if (dto.oredr__createdAt === 'ASC') {
+      if (dto.order__createdAt === 'ASC') {
         key = 'where__id__more_than';
       } else {
         key = 'where__id__less_than';
