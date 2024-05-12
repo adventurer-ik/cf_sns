@@ -5,8 +5,13 @@ import { PostsModel } from './entities/posts.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { paginatePostDto } from './dto/paginate-post.dto';
-import { HOST_IP, HOST_PORT, PROTOCOL } from 'src/common/const/env.const';
 import { CommonService } from 'src/common/common.service';
+import { ConfigService } from '@nestjs/config';
+import {
+  ENV_HOST_IP,
+  ENV_HOST_PORT,
+  ENV_PROTOCOL,
+} from 'src/common/const/env-keys.const';
 
 @Injectable()
 export class PostsService {
@@ -14,6 +19,7 @@ export class PostsService {
     @InjectRepository(PostsModel)
     private readonly postsRepository: Repository<PostsModel>,
     private readonly commonService: CommonService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getAllPosts() {
@@ -90,8 +96,12 @@ export class PostsService {
         ? posts[posts.length - 1]
         : null;
 
+    const protocol = this.configService.get<string>(ENV_PROTOCOL);
+    const hostIp = this.configService.get<string>(ENV_HOST_IP);
+    const hostPort = this.configService.get<string>(ENV_HOST_PORT);
+
     const nextUrl =
-      lastItem && new URL(`${PROTOCOL}://${HOST_IP}:${HOST_PORT}/posts`);
+      lastItem && new URL(`${protocol}://${hostIp}:${hostPort}/posts`);
 
     if (nextUrl) {
       /**
