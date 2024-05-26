@@ -8,7 +8,9 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
@@ -17,6 +19,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { paginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
 export class PostsController {
@@ -42,10 +45,19 @@ export class PostsController {
     return true;
   }
 
+  // 3) POST: /posts
+  // POST method로 계정 생성 한다.
+  //
+  // DTO - Data Transfer Object
   @Post()
   @UseGuards(AccessTokenGuard)
-  postPosts(@User('id') userId: number, @Body() body: CreatePostDto) {
-    return this.postsService.createPost(userId, body);
+  @UseInterceptors(FileInterceptor('image'))
+  postPosts(
+    @User('id') userId: number,
+    @Body() body: CreatePostDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.postsService.createPost(userId, body, file?.filename);
   }
 
   @Patch(':id')
