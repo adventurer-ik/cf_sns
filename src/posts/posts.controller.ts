@@ -49,6 +49,25 @@ export class PostsController {
   // POST method로 계정 생성 한다.
   //
   // DTO - Data Transfer Object
+  /**
+   * < transaction >
+   * A model, B model
+   * Post API -> A 모델 저장후, B 모델 저장하는 상황 가정
+   *
+   * await repository.save(A);
+   * await repository.save(B);
+   *
+   * 만약, A 저장 실패시, B 저장하면 안되는 경우 - all or noting
+   *
+   * 이때를 위한 것이 바로 transaction 기능임.
+   * nestjs 자체의 기능이 아니라, sql이면 다 지원해줌 (nosql의 경우는 케바케)
+   *
+   * transaction 명령어. (typeorm과 함께 잘 배워보자.)
+   * start -> 시작
+   * commit -> 저장
+   * rollback -> 원상복구
+   */
+
   @Post()
   @UseGuards(AccessTokenGuard)
   async postPosts(@User('id') userId: number, @Body() body: CreatePostDto) {
