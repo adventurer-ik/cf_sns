@@ -28,6 +28,11 @@ export class PostsModel extends BaseModel {
   @IsString({ message: stringValidationMessage })
   content: string;
 
+  @Column({
+    nullable: true,
+  })
+  image?: string;
+
   @Column()
   likeCount: number;
 
