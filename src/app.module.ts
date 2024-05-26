@@ -17,6 +17,8 @@ import {
   ENV_DB_PORT,
   ENV_DB_USERNAME,
 } from './common/const/env-keys.const';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 
 @Module({
   imports: [
@@ -48,6 +50,15 @@ import {
     UsersModule,
     AuthModule,
     CommonModule,
+    ServeStaticModule.forRoot({
+      // 주의 사항
+      // http://localhost:3000/public/posts/4022.jpg 형태로 호출이 되게 해야 함.
+      // 아래 rootPath에 PUBLIC_FOLDER_PATH만 있으면 http://localhost:3000/posts/4022.jpg 만 호출됨.
+      // 즉 PUBLIC_FOLDER_PATH 하위부터 인식을 함.
+      // 그래서 serverRoot 옵션 추가함. -> /public이란 접두어를 추가해줌
+      rootPath: PUBLIC_FOLDER_PATH,
+      serveRoot: '/public',
+    }),
   ],
   controllers: [AppController],
   providers: [
