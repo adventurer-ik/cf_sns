@@ -71,6 +71,7 @@ export class UsersModel extends BaseModel {
   })
   role: RolesEnum;
 
+  // user의 입장에서는 하나의 사용자가 여러개의 post 모델 관리.
   @OneToMany(() => PostsModel, (post) => post.author)
   posts: PostsModel[];
 }
