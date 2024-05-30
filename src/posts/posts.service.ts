@@ -18,24 +18,29 @@ import {
 } from 'src/common/const/env-keys.const';
 import {
   POSTS_IMAGE_PATH,
-  PUBLIC_FOLDER_PATH,
   TEMP_FOLDER_PATH,
 } from 'src/common/const/path.const';
 import { basename, join } from 'path';
 import { promises } from 'fs';
+import { createPostImageDto } from './image/dto/create-image.dto';
+import { ImageModel } from 'src/common/entity/image.entity';
+import { DEFAULT_POST_FIND_OPTION } from './const/default-post-find-options.const';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
     private readonly postsRepository: Repository<PostsModel>,
+    @InjectRepository(ImageModel)
+    private readonly imageRepository: Repository<ImageModel>,
     private readonly commonService: CommonService,
     private readonly configService: ConfigService,
   ) {}
 
   async getAllPosts() {
     return this.postsRepository.find({
-      relations: ['author'],
+      // relations: ['author', 'images'],
+      ...DEFAULT_POST_FIND_OPTION,
     });
   }
 
@@ -45,13 +50,20 @@ export class PostsService {
       await this.createPost(userId, {
         title: `임의로 생성한 Test 타이틀 - ${i}`,
         content: `임의로 생성한 Test 내용 - ${i} - ${i}`,
+        images: [],
       });
     }
   }
 
   // 1) 오름차순으로 정렬하는 pagination 먼저 구현 한다.
   async selectPaginatePosts(dto: paginatePostDto) {
-    return this.commonService.paginate(dto, this.postsRepository, {}, 'posts');
+    return this.commonService.paginate(
+      dto,
+      this.postsRepository,
+      // { relations: ['author', 'images'] },
+      { ...DEFAULT_POST_FIND_OPTION },
+      'posts',
+    );
     // if (dto.page) {
     //   return this.pagePaginatePosts(dto);
     // } else {
@@ -164,7 +176,8 @@ export class PostsService {
   async getPostById(id: number) {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['author'],
+      // relations: ['author', 'images'],
+      ...DEFAULT_POST_FIND_OPTION,
     });
 
     if (!post) {
@@ -174,9 +187,9 @@ export class PostsService {
     return post;
   }
 
-  async createPostImage(dto: CreatePostDto) {
+  async createPostImage(dto: createPostImageDto) {
     // dto에 존재하는 image 기반으로 파일의 경로 생성함.
-    const tempFilePath = join(TEMP_FOLDER_PATH, dto.image);
+    const tempFilePath = join(TEMP_FOLDER_PATH, dto.path);
     try {
       // 파일이 존재하는지 확인.
       // 만약 존재하지 않는다면 에러를 던짐.
@@ -195,10 +208,17 @@ export class PostsService {
     // /{project 경로}/public/posts/asdf.jpg
     const newPath = join(POSTS_IMAGE_PATH, fileName);
 
+    // save
+    // 파일을 미리 옮기고 save를 할 경우 -> db에 문제가 생겨서 롤백 해야 할 경우 파일도 다시 원래 경로로 옮겨야 함.
+    // 먼저 save해준후 문제없으면 파일 옮겨주는 형태로 한다면, 파일을 롤백하는 기능을 만들 필요가 없음
+    const result = await this.imageRepository.save({
+      ...dto,
+    });
+
     try {
       // 파일 옮기기
       await promises.rename(tempFilePath, newPath);
-      return true;
+      return result;
     } catch (error) {
       throw new BadRequestException('파일 옮기기 실패했습니다.', error);
     }
@@ -213,6 +233,7 @@ export class PostsService {
         id: authorId,
       },
       ...postDto,
+      images: [],
       likeCount: 0,
       commentCount: 0,
     });
@@ -226,7 +247,10 @@ export class PostsService {
     // save의 기능
     // 1) 만약에 데이터가 존재하지 않는다면 새로 생성함 (여기서는 id 기준)
     // 2) 만약에 동일한 데이터가 존재한다면, 업데이트 한다.
-    const post = await this.postsRepository.findOne({ where: { id } });
+    const post = await this.postsRepository.findOne({
+      ...DEFAULT_POST_FIND_OPTION,
+      where: { id },
+    });
 
     if (!post) {
       throw new NotFoundException();
