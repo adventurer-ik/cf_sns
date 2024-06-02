@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  InternalServerErrorException,
   Param,
   ParseIntPipe,
   Patch,
@@ -20,12 +19,14 @@ import { paginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { ImageModelType } from 'src/common/entity/image.entity';
 import { DataSource } from 'typeorm';
+import { PostImagesService } from './image/images.service';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly dataSource: DataSource,
+    private readonly postImagesService: PostImagesService,
   ) {}
 
   @Get()
@@ -89,17 +90,20 @@ export class PostsController {
     try {
       // transaction과 묶이지 않은 작업들은 트랜잭션이 정상적으로 완료되면, 마지막에 해주는 것이 좋음
       // 트랜잭션 도중 문제가 생기면 언제든지 돌리면 되나, 관련없는 것들은 번거로워짐.
-      const post = await this.postsService.createPost(userId, body);
+      const post = await this.postsService.createPost(userId, body, qr);
 
       // throw new InternalServerErrorException('삐용 삐용 테스트용 에러 발생');
 
       for (let i = 0; i < body.images.length; i++) {
-        await this.postsService.createPostImage({
-          post,
-          order: i,
-          path: body.images[i],
-          type: ImageModelType.POST_IMAGE,
-        });
+        await this.postImagesService.createPostImage(
+          {
+            post,
+            order: i,
+            path: body.images[i],
+            type: ImageModelType.POST_IMAGE,
+          },
+          qr,
+        );
       }
 
       // 쿼리 모두 정상적으로 수행되었을 경우, 저장!
