@@ -38,6 +38,7 @@ export class LogInterceptor implements NestInterceptor {
      */
     return next.handle().pipe(
       // tap은 모니터링 용, map은 응답값 제어용
+      // tap은 모니터링 뿐만 아니라, response가 끝난 뒤에 뭔가수행하는 용도로도 쓸 수 있음.
       tap(
         // console.log(`[Res] ${path} {}`)
         // (observable) => console.log(observable),
