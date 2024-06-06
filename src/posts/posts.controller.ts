@@ -35,7 +35,7 @@ export class PostsController {
 
   @Get()
   // @UseInterceptors(ClassSerializerInterceptor)
-  @UseInterceptors(LogInterceptor)
+  // @UseInterceptors(LogInterceptor)
   // @UseFilters(HttpExceptionFilter)
   getPosts(@Query() query: paginatePostDto) {
     return this.postsService.selectPaginatePosts(query);
