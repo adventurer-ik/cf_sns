@@ -31,8 +31,6 @@ export class ChatsGateway implements OnGatewayConnection {
     @MessageBody() data: number[],
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log('\n < enter_chat > ');
-    console.log(data);
     for (const chatId of data) {
       socket.join(chatId.toString());
     }
@@ -44,20 +42,27 @@ export class ChatsGateway implements OnGatewayConnection {
     @MessageBody() message: { message: string; chatId: number },
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log('\n < send_message > ');
-    console.log(message);
     console.log(
       `[${message.chatId.toString()}][Server] hello from server. - ${
         message.message
       }`,
     );
-    this.server
-      .in(message.chatId.toString())
+    // 같은 룸에 있는 유저들 중, 나를 제외한 모두에게 보낸다.
+    socket
+      .to(message.chatId.toString())
       .emit(
         'receive_message',
         `[${message.chatId.toString()}][Server] hello from server. - ${
           message.message
         }`,
       );
+    // this.server
+    //   .in(message.chatId.toString())
+    //   .emit(
+    //     'receive_message',
+    // `[${message.chatId.toString()}][Server] hello from server. - ${
+    //   message.message
+    // }`,
+    //   );
   }
 }
