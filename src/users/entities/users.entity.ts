@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
 import { RolesEnum } from '../const/roles.const';
 import { PostsModel } from 'src/posts/entities/posts.entity';
 import { BaseModel } from 'src/common/entity/base.entity';
@@ -7,6 +7,7 @@ import { lengthValidationMessages } from 'src/common/validation-message/length-v
 import { stringValidationMessage } from 'src/common/validation-message/string-validation.message';
 import { emailValidationMessage } from 'src/common/validation-message/email-validation.message';
 import { Exclude } from 'class-transformer';
+import { ChatsModel } from 'src/chats/entity/chats.entity';
 
 @Entity()
 export class UsersModel extends BaseModel {
@@ -74,4 +75,8 @@ export class UsersModel extends BaseModel {
   // user의 입장에서는 하나의 사용자가 여러개의 post 모델 관리.
   @OneToMany(() => PostsModel, (post) => post.author)
   posts: PostsModel[];
+
+  @ManyToMany(() => ChatsModel, (chats) => chats.users)
+  @JoinTable()
+  chats: ChatsModel[];
 }

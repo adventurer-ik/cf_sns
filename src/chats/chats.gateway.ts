@@ -7,6 +7,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { CreateChatDto } from './dto/create-chat.dto';
+import { ChatsService } from './chats.service';
 
 // socket.io 가 연결하는 곳을 우리는, nest.js에서는 gateway라고 부름.
 @WebSocketGateway({
@@ -14,6 +16,10 @@ import { Server, Socket } from 'socket.io';
   namespace: 'chats',
 })
 export class ChatsGateway implements OnGatewayConnection {
+  constructor(private readonly chatsService: ChatsService) {
+    console.log('ChatsGateway created');
+  }
+
   @WebSocketServer()
   server: Server;
 
@@ -23,6 +29,14 @@ export class ChatsGateway implements OnGatewayConnection {
         'kr',
       )})`,
     );
+  }
+
+  @SubscribeMessage('create_chat')
+  createChat(
+    @MessageBody() data: CreateChatDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const chat = this.chatsService.createChat(data);
   }
 
   @SubscribeMessage('enter_chat')
@@ -47,7 +61,9 @@ export class ChatsGateway implements OnGatewayConnection {
         message.message
       }`,
     );
-    // 같은 룸에 있는 유저들 중, 나를 제외한 모두에게 보낸다.
+    // 같은 룸에 있는 유저들 중, 나를 제외한 모두에게 보낸다. - brodcasting 기능
+    // - 나를 제외한 나머지 방에 있는 관련 소켓들한테만 메세지를 보내는 기능.
+    // - 현재 소켓을 제외하고 메세지 보낸다.
     socket
       .to(message.chatId.toString())
       .emit(

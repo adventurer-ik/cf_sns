@@ -28,6 +28,7 @@ import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 import { ImageModel } from './common/entity/image.entity';
 import { LogMiddleware } from './common/middleware/log.middleware';
 import { ChatsModule } from './chats/chats.module';
+import { ChatsModel } from './chats/entity/chats.entity';
 
 @Module({
   imports: [
@@ -52,7 +53,7 @@ import { ChatsModule } from './chats/chats.module';
       username: process.env[ENV_DB_USERNAME],
       password: process.env[ENV_DB_PASSWORD],
       database: process.env[ENV_DB_DATABASE],
-      entities: [PostsModel, UsersModel, ImageModel],
+      entities: [PostsModel, UsersModel, ImageModel, ChatsModel],
       synchronize: true,
     }),
     PostsModule,
