@@ -5,10 +5,12 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { ChatsService } from './chats.service';
+import { EnterChatDto } from './dto/enter-chat.dto';
 
 // socket.io 가 연결하는 곳을 우리는, nest.js에서는 gateway라고 부름.
 @WebSocketGateway({
@@ -32,22 +34,34 @@ export class ChatsGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('create_chat')
-  createChat(
+  async createChat(
     @MessageBody() data: CreateChatDto,
     @ConnectedSocket() socket: Socket,
   ) {
-    const chat = this.chatsService.createChat(data);
+    const chat = await this.chatsService.createChat(data);
   }
 
   @SubscribeMessage('enter_chat')
-  enterChat(
+  async enterChat(
     // 방의 chat ID들을 리스트로 받는다.
-    @MessageBody() data: number[],
+    @MessageBody() data: EnterChatDto,
     @ConnectedSocket() socket: Socket,
   ) {
-    for (const chatId of data) {
-      socket.join(chatId.toString());
+    for (const chatId of data.chatIds) {
+      const exist = await this.chatsService.checkIfChatExists(chatId);
+      console.log(`--- exist: ${exist}`);
+      console.log(exist);
+
+      if (!exist) {
+        // throw new WsException(`Chat with ID ${chatId} does not exist`);
+        throw new WsException({
+          statusCode: 101,
+          message: `존재하지 않는 chatId 입니다. chatId: ${chatId}`,
+        });
+      }
     }
+
+    socket.join(data.chatIds.map((id) => id.toString()));
   }
 
   // socket.on('send_message', (message) => { console.log(message) });
