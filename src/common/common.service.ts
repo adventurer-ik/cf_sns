@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { BaseModel } from './entity/base.entity';
-import { basePaginationDto } from './dto/base-pagination.dto';
+import { BasePaginationDto } from './dto/base-pagination.dto';
 import {
   FindManyOptions,
   FindOptionsOrder,
@@ -19,7 +19,7 @@ import {
 export class CommonService {
   constructor(private readonly configService: ConfigService) {}
   paginate<T extends BaseModel>(
-    dto: basePaginationDto,
+    dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
     path: string,
@@ -32,7 +32,7 @@ export class CommonService {
   }
 
   private async pagePaginate<T extends BaseModel>(
-    dto: basePaginationDto,
+    dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
   ) {
@@ -50,7 +50,7 @@ export class CommonService {
   }
 
   private async cursorPaginate<T extends BaseModel>(
-    dto: basePaginationDto,
+    dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
     path: string,
@@ -201,7 +201,7 @@ export class CommonService {
   }
 
   private composeFindOptions<T extends BaseModel>(
-    dto: basePaginationDto,
+    dto: BasePaginationDto,
   ): FindManyOptions<T> {
     /**
      * where,

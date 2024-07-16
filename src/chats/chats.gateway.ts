@@ -11,6 +11,8 @@ import { Server, Socket } from 'socket.io';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { ChatsService } from './chats.service';
 import { EnterChatDto } from './dto/enter-chat.dto';
+import { CreateMessageDto } from './messages/dto/create-messages.dto';
+import { ChatsMessagesService } from './messages/messages.service';
 
 // socket.io 가 연결하는 곳을 우리는, nest.js에서는 gateway라고 부름.
 @WebSocketGateway({
@@ -18,7 +20,10 @@ import { EnterChatDto } from './dto/enter-chat.dto';
   namespace: 'chats',
 })
 export class ChatsGateway implements OnGatewayConnection {
-  constructor(private readonly chatsService: ChatsService) {
+  constructor(
+    private readonly chatsService: ChatsService,
+    private readonly messageService: ChatsMessagesService,
+  ) {
     console.log('ChatsGateway created');
   }
 
@@ -66,12 +71,23 @@ export class ChatsGateway implements OnGatewayConnection {
 
   // socket.on('send_message', (message) => { console.log(message) });
   @SubscribeMessage('send_message')
-  sendMessage(
-    @MessageBody() message: { message: string; chatId: number },
+  async sendMessage(
+    @MessageBody() dto: CreateMessageDto,
     @ConnectedSocket() socket: Socket,
   ) {
+    const chatExists = await this.chatsService.checkIfChatExists(dto.chatId);
+
+    if (!chatExists) {
+      throw new WsException({
+        statusCode: 101,
+        message: `존재하지 않는 chatId 입니다. chatId: ${dto.chatId}`,
+      });
+    }
+
+    const message = await this.messageService.createMessage(dto);
+
     console.log(
-      `[${message.chatId.toString()}][Server] hello from server. - ${
+      `[${message.id.toString()}][${message.chat.id.toString()}][Server] hello from server. - ${
         message.message
       }`,
     );
@@ -79,10 +95,10 @@ export class ChatsGateway implements OnGatewayConnection {
     // - 나를 제외한 나머지 방에 있는 관련 소켓들한테만 메세지를 보내는 기능.
     // - 현재 소켓을 제외하고 메세지 보낸다.
     socket
-      .to(message.chatId.toString())
+      .to(message.chat.id.toString())
       .emit(
         'receive_message',
-        `[${message.chatId.toString()}][Server] hello from server. - ${
+        `[${message.chat.id.toString()}][Server] hello from server. - ${
           message.message
         }`,
       );

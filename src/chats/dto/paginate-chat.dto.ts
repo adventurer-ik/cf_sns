@@ -1,3 +1,3 @@
-import { basePaginationDto } from 'src/common/dto/base-pagination.dto';
+import { BasePaginationDto } from 'src/common/dto/base-pagination.dto';
 
-export class PaginateChatDto extends basePaginationDto {}
+export class PaginateChatDto extends BasePaginationDto {}

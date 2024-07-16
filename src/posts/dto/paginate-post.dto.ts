@@ -1,7 +1,7 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { basePaginationDto } from 'src/common/dto/base-pagination.dto';
+import { BasePaginationDto } from 'src/common/dto/base-pagination.dto';
 
-export class paginatePostDto extends basePaginationDto {
+export class paginatePostDto extends BasePaginationDto {
   @IsNumber()
   @IsOptional()
   where__likeCount__more_than: number;
