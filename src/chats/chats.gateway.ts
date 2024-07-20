@@ -73,6 +73,17 @@ export class ChatsGateway implements OnGatewayConnection {
     const chat = await this.chatsService.createChat(data);
   }
 
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @UseGuards(SocketBearerTokenGuard)
   @SubscribeMessage('enter_chat')
   async enterChat(
     // 방의 chat ID들을 리스트로 받는다.
@@ -97,21 +108,35 @@ export class ChatsGateway implements OnGatewayConnection {
   }
 
   // socket.on('send_message', (message) => { console.log(message) });
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @UseGuards(SocketBearerTokenGuard)
   @SubscribeMessage('send_message')
   async sendMessage(
     @MessageBody() dto: CreateMessageDto,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: Socket & { user: UsersModel },
   ) {
     const chatExists = await this.chatsService.checkIfChatExists(dto.chatId);
 
     if (!chatExists) {
       throw new WsException({
         statusCode: 101,
-        message: `존재하지 않는 chatId 입니다. chatId: ${dto.chatId}`,
+        message: `존재하지 않는 채팅방 입니다. chatId: ${dto.chatId}`,
       });
     }
 
-    const message = await this.messageService.createMessage(dto);
+    const message = await this.messageService.createMessage(
+      dto,
+      socket.user.id,
+    );
 
     console.log(
       `[${message.id.toString()}][${message.chat.id.toString()}][Server] hello from server. - ${
