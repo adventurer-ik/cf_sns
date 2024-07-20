@@ -13,8 +13,15 @@ import { ChatsService } from './chats.service';
 import { EnterChatDto } from './dto/enter-chat.dto';
 import { CreateMessageDto } from './messages/dto/create-messages.dto';
 import { ChatsMessagesService } from './messages/messages.service';
-import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { SocketCatchHttpExceptionFilter } from 'src/common/exception-filter/socket-catch-http.exception-filter';
+import { SocketBearerTokenGuard } from 'src/auth/guard/socket/socket-bearer-token.guard';
+import { UsersModel } from 'src/users/entities/users.entity';
 
 // socket.io 가 연결하는 곳을 우리는, nest.js에서는 gateway라고 부름.
 @WebSocketGateway({
@@ -57,10 +64,11 @@ export class ChatsGateway implements OnGatewayConnection {
     }),
   )
   @UseFilters(SocketCatchHttpExceptionFilter)
+  @UseGuards(SocketBearerTokenGuard)
   @SubscribeMessage('create_chat')
   async createChat(
     @MessageBody() data: CreateChatDto,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: Socket & { user: UsersModel },
   ) {
     const chat = await this.chatsService.createChat(data);
   }
