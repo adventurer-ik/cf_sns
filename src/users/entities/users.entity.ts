@@ -53,8 +53,8 @@ export class UsersModel extends BaseModel {
    * backend -> frontend
    * class instance (dto) -> plain object (JSON)
    *
-   * toClassOnly -> class instance (dto) 변환 될 때만: 요청(Request) 보낼때만 적용!
-   * toPlainOnly -> plain object (JSON) 변환 될 때만: 응답(Response) 할 때만 적용!
+   * toClassOnly -> class instance (dto) 변환 될 때만: 요청(Request) 보낼때만 적용! (요청 받을때만 삭제)
+   * toPlainOnly -> plain object (JSON) 변환 될 때만: 응답(Response) 할 때만 적용! (보내는 응답에서만 삭제)
    *
    * 여기서 password는 우리가 사용자로부터 입력을 받고 확인을 해야 하므로 (서버측)은 필요함.
    * 다만, 응답할 때는 알려줘서는 안되는 데이터.

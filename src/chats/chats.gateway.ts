@@ -13,15 +13,11 @@ import { ChatsService } from './chats.service';
 import { EnterChatDto } from './dto/enter-chat.dto';
 import { CreateMessageDto } from './messages/dto/create-messages.dto';
 import { ChatsMessagesService } from './messages/messages.service';
-import {
-  UseFilters,
-  UseGuards,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { SocketCatchHttpExceptionFilter } from 'src/common/exception-filter/socket-catch-http.exception-filter';
-import { SocketBearerTokenGuard } from 'src/auth/guard/socket/socket-bearer-token.guard';
 import { UsersModel } from 'src/users/entities/users.entity';
+import { UsersService } from 'src/users/users.service';
+import { AuthService } from 'src/auth/auth.service';
 
 // socket.io 가 연결하는 곳을 우리는, nest.js에서는 gateway라고 부름.
 @WebSocketGateway({
@@ -32,6 +28,8 @@ export class ChatsGateway implements OnGatewayConnection {
   constructor(
     private readonly chatsService: ChatsService,
     private readonly messageService: ChatsMessagesService,
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
   ) {
     console.log('ChatsGateway created');
   }
@@ -39,12 +37,38 @@ export class ChatsGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  handleConnection(socket: Socket) {
+  async handleConnection(socket: Socket & { user: UsersModel }) {
     console.log(
       `[socket.io] on connect called: ${socket.id} (${new Date().toLocaleString(
         'kr',
       )})`,
     );
+    const headers = socket.handshake.headers;
+
+    //Bearer Token
+    const rawToken = headers['authorization'];
+
+    if (!rawToken) {
+      socket.disconnect();
+    }
+
+    try {
+      const token = this.authService.extractTokenFromHeader(rawToken, true);
+
+      const payload = this.authService.verifyToken(token);
+      const user = await this.usersService.getUserByEmail(payload.email);
+
+      if (!user) {
+        throw new WsException('토큰 사용자를 찾을 수 없습니다.');
+      }
+
+      socket.user = user;
+
+      return true;
+    } catch (error) {
+      console.log(`[socket] 토큰이 유효하지 않음!! (2) - ${error}`);
+      socket.disconnect();
+    }
   }
 
   @UsePipes(
@@ -64,7 +88,6 @@ export class ChatsGateway implements OnGatewayConnection {
     }),
   )
   @UseFilters(SocketCatchHttpExceptionFilter)
-  @UseGuards(SocketBearerTokenGuard)
   @SubscribeMessage('create_chat')
   async createChat(
     @MessageBody() data: CreateChatDto,
@@ -83,12 +106,11 @@ export class ChatsGateway implements OnGatewayConnection {
       forbidNonWhitelisted: true,
     }),
   )
-  @UseGuards(SocketBearerTokenGuard)
   @SubscribeMessage('enter_chat')
   async enterChat(
     // 방의 chat ID들을 리스트로 받는다.
     @MessageBody() data: EnterChatDto,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: Socket & { user: UsersModel },
   ) {
     for (const chatId of data.chatIds) {
       const exist = await this.chatsService.checkIfChatExists(chatId);
@@ -118,7 +140,6 @@ export class ChatsGateway implements OnGatewayConnection {
       forbidNonWhitelisted: true,
     }),
   )
-  @UseGuards(SocketBearerTokenGuard)
   @SubscribeMessage('send_message')
   async sendMessage(
     @MessageBody() dto: CreateMessageDto,

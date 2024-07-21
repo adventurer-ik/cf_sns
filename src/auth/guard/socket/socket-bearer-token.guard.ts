@@ -8,7 +8,7 @@ import { UsersService } from 'src/users/users.service';
 export class SocketBearerTokenGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UsersService,
+    private readonly usersService: UsersService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -27,7 +27,7 @@ export class SocketBearerTokenGuard implements CanActivate {
       const token = this.authService.extractTokenFromHeader(rawToken, true);
 
       const payload = this.authService.verifyToken(token);
-      const user = await this.userService.getUserByEmail(payload.email);
+      const user = await this.usersService.getUserByEmail(payload.email);
 
       if (!user) {
         throw new WsException('토큰 사용자를 찾을 수 없습니다.');
