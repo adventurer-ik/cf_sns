@@ -1,7 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { CommentsService } from './comments.service';
+import { PaginateCommentsDto } from './dto/paginate-comments.dto';
 
-@Controller('posts/:postId/comments')
+@Controller('post/:postId/comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {
     /**
@@ -21,5 +22,12 @@ export class CommentsController {
      * 5) PATCH(':commentId') 특정 댓글(comment) 수정
      * 6) DELETE(':commentId') 특정 댓글(comment) 삭제
      */
+  }
+  @Get()
+  getComments(
+    @Param('postId', ParseIntPipe) postId: number,
+    @Query() query: PaginateCommentsDto,
+  ) {
+    return this.commentsService.paginateComments(query, postId);
   }
 }
