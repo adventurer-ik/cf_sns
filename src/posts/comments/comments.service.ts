@@ -7,6 +7,7 @@ import { CommentsModel } from './entity/comments.entity';
 import { CreateCommentsDto } from './dto/create-comments.dto';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { DEFAULT_COMMENT_FIND_OPTIONS } from './const/default-comment-find-options.const';
+import { UpdateCommentsDto } from './dto/update-comments.dto';
 
 @Injectable()
 export class CommentsService {
@@ -59,5 +60,16 @@ export class CommentsService {
       },
       author,
     });
+  }
+
+  async updateComment(commentId: number, dto: UpdateCommentsDto) {
+    const prevComment = await this.commentsRepository.preload({
+      id: commentId,
+      ...dto,
+    });
+
+    const newComment = await this.commentsRepository.save(prevComment);
+
+    return newComment;
   }
 }
