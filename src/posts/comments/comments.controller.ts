@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -68,5 +69,11 @@ export class CommentsController {
     @Body() body: UpdateCommentsDto,
   ) {
     return this.commentsService.updateComment(commentId, body);
+  }
+
+  @Delete(':commentId')
+  @UseGuards(AccessTokenGuard)
+  async deleteComment(@Param('commentId', ParseIntPipe) commentId: number) {
+    return this.commentsService.deleteComment(commentId);
   }
 }
