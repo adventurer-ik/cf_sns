@@ -245,4 +245,15 @@ export class PostsService {
 
     return id;
   }
+
+  async checkPostExistsById(id: number) {
+    return this.postsRepository.exists({
+      where: { id },
+    });
+    // const post = await this.postsRepository.findOne({ where: { id } });
+
+    // if (!post) {
+    //   throw new NotFoundException();
+    // }
+  }
 }
