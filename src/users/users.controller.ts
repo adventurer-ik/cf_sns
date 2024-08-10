@@ -7,6 +7,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { Roles } from './decorator/roles.decorator';
+import { RolesEnum } from './const/roles.const';
 
 @Controller('users')
 export class UsersController {
@@ -21,6 +23,7 @@ export class UsersController {
    * deserialization -> 역직렬화
    */
   // @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(RolesEnum.ADMIN)
   getUsers() {
     return this.usersService.getAllUser();
   }
