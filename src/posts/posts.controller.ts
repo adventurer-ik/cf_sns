@@ -27,6 +27,7 @@ import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-filter';
 import { RolesEnum } from 'src/users/const/roles.const';
 import { Roles } from 'src/users/decorator/roles.decorator';
+import { IsPublic } from 'src/common/decorator/is-public.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -39,11 +40,13 @@ export class PostsController {
   // @UseInterceptors(ClassSerializerInterceptor)
   // @UseInterceptors(LogInterceptor)
   // @UseFilters(HttpExceptionFilter)
+  @IsPublic()
   getPosts(@Query() query: paginatePostDto) {
     return this.postsService.selectPaginatePosts(query);
   }
 
   @Get(':id')
+  @IsPublic()
   getPost(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.getPostById(id);
   }
@@ -51,7 +54,6 @@ export class PostsController {
   // 테스트 - 나중에 꼭 삭제 필요
   // POST /posts/random
   @Post('random')
-  @UseGuards(AccessTokenGuard)
   async postRandoms(@User() user: UsersModel) {
     await this.postsService.generatePosts(user.id);
     return true;
@@ -81,7 +83,6 @@ export class PostsController {
    */
 
   @Post()
-  @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
   async postPosts(
     @User('id') userId: number,
@@ -118,7 +119,6 @@ export class PostsController {
   }
 
   @Delete(':id')
-  @UseGuards(AccessTokenGuard)
   @Roles(RolesEnum.ADMIN)
   deletePost(@Param('id', ParseIntPipe) id: number): Promise<number> {
     return this.postsService.deletePost(id);
