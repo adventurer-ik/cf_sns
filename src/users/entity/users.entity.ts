@@ -89,11 +89,11 @@ export class UsersModel extends BaseModel {
   comments: CommentsModel[];
 
   // 내가 follow 하는 사람들
-  @ManyToMany(() => UsersModel, (user) => user.followers)
+  @ManyToMany(() => UsersModel, (user) => user.followees)
   @JoinTable()
   followers: UsersModel[];
 
   // 나를 follow 하는 사람들
-  @ManyToMany(() => UsersModel, (user) => user.followees)
+  @ManyToMany(() => UsersModel, (user) => user.followers)
   followees: UsersModel[];
 }

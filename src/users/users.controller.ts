@@ -3,12 +3,16 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Post,
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Roles } from './decorator/roles.decorator';
 import { RolesEnum } from './const/roles.const';
+import { UsersModel } from './entity/users.entity';
+import { User } from './decorator/user.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -26,6 +30,21 @@ export class UsersController {
   @Roles(RolesEnum.ADMIN)
   getUsers() {
     return this.usersService.getAllUser();
+  }
+
+  @Get('follow/me')
+  async getFollow(@User() user: UsersModel) {
+    return this.usersService.getFollowers(user.id);
+  }
+
+  @Post('follow/:id')
+  async postFollow(
+    @User() user: UsersModel,
+    @Param('id', ParseIntPipe) followeeId: number,
+  ) {
+    await this.usersService.followUser(user.id, followeeId);
+
+    return true;
   }
 
   // @Post()
