@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   Param,
   ParseBoolPipe,
@@ -65,12 +66,12 @@ export class UsersController {
     return true;
   }
 
-  // @Post()
-  // postUser(
-  //   @Body('nickname') nickname: string,
-  //   @Body('email') email: string,
-  //   @Body('password') password: string,
-  // ) {
-  //   return this.usersService.createUser({ nickname, email, password });
-  // }
+  @Delete('follow/:id')
+  async deleteFollow(
+    @User() user: UsersModel,
+    @Param('id', ParseIntPipe) followeeId: number,
+  ) {
+    return this.usersService.deleteFollow(user.id, followeeId);
+    return true;
+  }
 }
