@@ -72,7 +72,7 @@ export class UsersService {
     return true;
   }
 
-  async getFollowers(userId: number): Promise<UsersModel[]> {
+  async getFollowers(userId: number, includeNotConfirmed: boolean) {
     /**
      * [
      *   {
@@ -85,10 +85,39 @@ export class UsersService {
      *   }
      * ]
      */
+    const where = {
+      followee: {
+        id: userId,
+      },
+    };
+
+    if (!includeNotConfirmed) {
+      where['isConfirmed'] = true;
+    }
+
     const result = await this.userFollowersRepository.find({
+      where,
+      relations: {
+        follower: true,
+        followee: true,
+      },
+    });
+    return result.map((x) => ({
+      id: x.follower.id,
+      nickname: x.follower.nickname,
+      email: x.follower.email,
+      isConfirmed: x.isConfirmed,
+    }));
+  }
+
+  async confirmFollow(followerId: number, followeeId: number) {
+    const existing = await this.userFollowersRepository.findOne({
       where: {
+        follower: {
+          id: followerId,
+        },
         followee: {
-          id: userId,
+          id: followeeId,
         },
       },
       relations: {
@@ -96,6 +125,16 @@ export class UsersService {
         followee: true,
       },
     });
-    return result.map((x) => x.follower);
+
+    if (!existing) {
+      throw new BadRequestException('존재하지 않는 팔로우 요청입니다.');
+    }
+
+    await this.userFollowersRepository.save({
+      ...existing,
+      isConfirmed: true,
+    });
+
+    return true;
   }
 }
